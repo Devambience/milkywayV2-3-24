@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from 'react'; // Import useEffect and useState hooks
 
-import { UserButton, useAuth } from "@clerk/nextjs";
+import { UserButton, useAuth, useUser, useClerk } from "@clerk/nextjs";
 import { usePathname } from "next/navigation";
 import { LogOut } from "lucide-react";
 import Link from "next/link";
@@ -13,13 +13,16 @@ import { DropdownMenu, DropdownMenuTrigger, DropdownMenuContent, DropdownMenuLab
 import { Sheet, SheetTrigger, SheetContent, SheetHeader, SheetTitle, SheetDescription, SheetFooter, SheetClose } from "@/components/ui/sheet";
 import { Button } from "@/components/ui/button";
 import { isTeacher } from "@/lib/teacher";
-
+import { useRouter } from 'next/navigation'
 import { SearchInput } from "./search-input";
 
 export const NavbarRoutes = () => {
   const { userId } = useAuth();
   const pathname = usePathname();
-  
+
+  const { signOut } = useClerk();
+  const router = useRouter()
+
   // State to track whether profile pic loaded or not
   const [isProfilePicLoaded, setIsProfilePicLoaded] = useState(false);
 
@@ -35,6 +38,9 @@ export const NavbarRoutes = () => {
   function setTheme(arg0: string): void {
     throw new Error('Function not implemented.');
   }
+
+  const { user } = useUser();
+
 
   return (
     <>
@@ -73,7 +79,14 @@ export const NavbarRoutes = () => {
             {isProfilePicLoaded && <UserButton afterSignOutUrl="/" />}
           </DropdownMenuTrigger>
           <DropdownMenuContent className="w-56">
-            <DropdownMenuLabel>My Account</DropdownMenuLabel>
+            <DropdownMenuLabel>{user?.fullName}</DropdownMenuLabel>
+            <DropdownMenuLabel>
+              <pre>
+                <code className="text-sm/[17px]">{user?.id}</code>
+              </pre>
+            </DropdownMenuLabel>
+
+
             <DropdownMenuSeparator />
             <DropdownMenuGroup>
               <DropdownMenuItem disabled>
@@ -107,8 +120,10 @@ export const NavbarRoutes = () => {
             <DropdownMenuItem>YouTube</DropdownMenuItem>
             <DropdownMenuItem disabled>API</DropdownMenuItem>
             <DropdownMenuSeparator />
-            <DropdownMenuItem className='text-[#ef4444]'>
-              Log out
+            <DropdownMenuItem
+              onClick={() => signOut(() => router.push("/"))}
+              className='text-[#ef4444]'>
+              Log Out
               <DropdownMenuShortcut>⇧⌘Q</DropdownMenuShortcut>
             </DropdownMenuItem>
           </DropdownMenuContent>
